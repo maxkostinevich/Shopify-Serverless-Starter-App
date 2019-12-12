@@ -1,0 +1,141 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: shopify-app-name
+
+plugins:
+- serverless-apigw-binary
+- serverless-offline
+- serverless-aws-static-file-handler/plugins/BinaryMediaTypes
+
+custom:
+  apiGateway:
+    binaryMediaTypes:
+      - image/png
+      - image/jpeg
+      - "*/*"
+  apigwBinary:
+    types:
+      - 'image/jpeg'
+      - 'image/png'
+  defaultStage: dev
+  environment: ${file(env.yml):${self:provider.stage}, file(env.yml):default}
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  stage: ${opt:stage, self:custom.defaultStage}
+  environment:
+    appName: ${self:custom.environment.appName}
+    tableName: ${self:service}-shops-${self:provider.stage}
+    SHOPIFY_API_KEY: ${self:custom.environment.SHOPIFY_API_KEY}
+    SHOPIFY_API_SECRET: ${self:custom.environment.SHOPIFY_API_SECRET}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - dynamodb:BatchGetItem
+        - dynamodb:BatchWriteItem
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.tableName}"
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:${opt:region, self:provider.region}:*:table/${self:provider.environment.tableName}/index/domain-index"
+
+
+functions:
+  # ASSETS
+  assetsFavicon:
+    handler: app/assets.favicon
+    events:
+      - http:
+          path: assets/favicon.png
+          method: get
+  assetsCSS:
+    handler: app/assets.css
+    events:
+      - http:
+          path: assets/css/app.css
+          method: get
+  assetsJS:
+    handler: app/assets.js
+    events:
+      - http:
+          path: assets/js/app.js
+          method: get
+  # END ASSETS
+  authIndex:
+    handler: app/auth.index
+    events:
+      - http:
+          path: /
+          method: get
+  installIndex:
+    handler: app/install.index
+    events:
+      - http:
+          path: install
+          method: get
+  installStore:
+    handler: app/install.store
+    events:
+      - http:
+          path: install/store
+          method: any
+  webhookUninstall:
+    handler: app/webhooks.uninstall
+    events:
+      - http:
+          path: webhooks/uninstall
+          method: post
+  webhookGDPR:
+    handler: app/webhooks.gdpr
+    events:
+      - http:
+          path: webhooks/gdpr
+          method: post
+
+
+resources:
+  Resources:
+    ShopsTable:
+      Type: AWS::DynamoDB::Table
+      DeletionPolicy: Retain
+      Properties:
+        TableName: ${self:provider.environment.tableName}
+        AttributeDefinitions:
+          - AttributeName: shopId
+            AttributeType: S
+          - AttributeName: domain
+            AttributeType: S
+        KeySchema:
+          - AttributeName: shopId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: domain-index
+            KeySchema:
+              - AttributeName: domain
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+        BillingMode: PAY_PER_REQUEST

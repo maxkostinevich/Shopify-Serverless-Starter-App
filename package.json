@@ -1,0 +1,41 @@
+{
+  "name": "shopify-app-name",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "assets-dev": "npm run assets-development",
+    "assets-development": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
+    "assets-watch": "npm run assets-development -- --watch",
+    "assets-prod": "npm run assets-production",
+    "assets-production": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --no-progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
+    "sls-offline": "sls offline -o 0.0.0.0 -P 8080"
+  },
+  "author": "DigitalWheat",
+  "license": "ISC",
+  "dependencies": {
+    "@shopify/app-bridge": "^1.6.8",
+    "@shopify/polaris": "^4.1.0",
+    "aws-sdk": "^2.528.0",
+    "axios": "^0.19.0",
+    "react": "^16.2.0",
+    "react-dom": "^16.2.0",
+    "react-router-dom": "^5.0.1",
+    "resolve-url-loader": "^2.3.1",
+    "serverless-aws-static-file-handler": "^2.0.2",
+    "shopify-node-api": "^1.11.1",
+    "uuid": "^3.3.3"
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.5.5",
+    "@babel/preset-react": "^7.0.0",
+    "cross-env": "^5.2.1",
+    "laravel-mix": "^4.1.4",
+    "resolve-url-loader": "^3.1.0",
+    "sass": "^1.22.0",
+    "sass-loader": "^7.3.1",
+    "serverless-apigw-binary": "^0.4.4",
+    "serverless-offline": "^5.10.1",
+    "vue-template-compiler": "^2.6.10"
+  }
+}
